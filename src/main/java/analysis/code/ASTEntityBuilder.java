@@ -65,7 +65,7 @@ public class ASTEntityBuilder {//don't serialize AST information
 	protected void generateAST() {
 		// GENERATE AST
 		entityNodes.clear();
-		ASTParser parser = ASTParser.newParser(AST.JLS3);
+		ASTParser parser = ASTParser.newParser(AST.JLS9);
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
 		parser.setResolveBindings(false); 
 		parser.setSource(targetObject.getContent().toCharArray());

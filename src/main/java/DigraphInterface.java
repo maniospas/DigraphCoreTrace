@@ -14,8 +14,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import analysis.Importer;
 import trace.CacheDigraph;
 import trace.SimpleDigraph;
+import trace.SparceMatrix;
 import trace.Trace;
 import util.ThreadManager;
 
@@ -47,6 +49,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.JSlider;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.SwingConstants;
@@ -156,6 +159,7 @@ public class DigraphInterface extends JFrame {
 	private JMenuItem mntmAutodetect;
 	private JMenu mnCores;
 	private JMenu mnFilter;
+	private JTextField filterName;
 	private JPanel panel_1;
 	private JLabel lblMinElod;
 	private JSlider sliderScore;
@@ -174,7 +178,7 @@ public class DigraphInterface extends JFrame {
 	
 	
 	public boolean passesFilters(MethodEntry entry) {
-		return entry.getTrace()!=null && entry.getScore()>=sliderScore.getValue() && entry.getNumEdges()>=sliderEdges.getValue() && entry.getParameter()>=sliderParameter.getValue();
+		return entry.getTrace()!=null && entry.getScore()>=sliderScore.getValue() && entry.getNumEdges()>=sliderEdges.getValue() && entry.getParameter()>=sliderParameter.getValue() && entry.getName().contains(filterName.getText());
 	}
 	
 	public void updateFilters() {
@@ -346,14 +350,26 @@ public class DigraphInterface extends JFrame {
 							repaint();
 							System.out.println("Path: "+path);
 							
-							Importer importer = new Importer(path, importSources, importBinary);
-							double[][] callMatrix = importer.getCallMatrix();
-							if(callMatrix!=null && callMatrix.length!=0) {
+							Importer importer = new analysis.code.ASTProjectImporter();
+							SparceMatrix callMatrix = null;
+							try {
+								importer.load(new File(path));
+								callMatrix = importer.createCallGraph();
+								System.out.println("Methods: "+callMatrix.size());
+								System.out.println("Calls  : "+callMatrix.countNonZeros());
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							if(callMatrix!=null && callMatrix.size()!=0) {
 								importingGraph = new CacheDigraph(callMatrix);
 								importingGraph.removeSelfLoops();
 								for(int i=0;i<importingGraph.getNumNodes() && runningThreadRunning;i++) {
-									String methodName = importer.getMethodName(i);
-									String methodDetails = importer.getMethodDetails(i);
+									if(importer.getMethod(i)==null) {
+										System.out.println(i+"/"+importingGraph.getNumNodes());
+										continue;
+									}
+									String methodName = importer.getMethod(i).toString();
+									String methodDetails = "";
 									entries.put(i, new MethodEntry(methodName, methodDetails, i));
 								}
 								
@@ -814,6 +830,10 @@ public class DigraphInterface extends JFrame {
 		sliderEdges.setMaximum(10);
 		sliderEdges.setValue(0);
 		panel_2.add(sliderEdges);
+
+		filterName = new JTextField();
+		mnFilter.add(filterName);
+		
 		
 		mntmApplyFilters = new JMenuItem("Apply Filter");
 		mntmApplyFilters.addActionListener(new ActionListener() {
@@ -821,6 +841,7 @@ public class DigraphInterface extends JFrame {
 				updateFilters();
 			}
 		});
+		
 		mnFilter.add(mntmApplyFilters);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));

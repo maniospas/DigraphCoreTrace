@@ -52,4 +52,17 @@ public class Decomposition {
 		}
 		return trace;
 	}
+	
+	public static SimpleDigraph iterativeCoreDecomposition(SimpleDigraph G, int r, double[] additionalOutgoing, boolean undirected) {
+		int prevDegree = G.getNumEdges();
+		SimpleDigraph trace = coreDecomposition(G, r, additionalOutgoing, undirected);
+		while(true) {
+			int degree = trace.getNumEdges();
+			if(prevDegree==degree)
+				break;
+			prevDegree = degree;
+			trace = coreDecomposition(trace, r, additionalOutgoing, undirected);
+		}
+		return trace;
+	}
 }

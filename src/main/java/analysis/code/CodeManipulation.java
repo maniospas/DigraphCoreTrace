@@ -12,8 +12,13 @@ public class CodeManipulation {
 	}
 	
 	public static String removeComments(String code) {
+		try {
 		  return code.replaceAll("(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)|(?://.*)", "");
 		}
+		catch(StackOverflowError e) {
+			return code;
+		}
+	}
 	
 	public static int topLevelIndexOf(String text, String str, int startingPosition) {
 		char first = str.charAt(0);

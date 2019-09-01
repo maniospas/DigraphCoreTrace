@@ -3,6 +3,7 @@ package analysis.code;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import trace.SparceMatrix;
 
 /**
  * <h1>ASTProject</h1>
@@ -11,14 +12,12 @@ import java.util.HashMap;
  * loaded. Code needs to be bug-free but files are allowed to missing.
  * @author Manios Kranasakis
  */
-public class ASTProject {
+public class ASTProjectImporter extends analysis.Importer{
 	private HashMap<String, ASTEntity> projectClasses = new HashMap<String, ASTEntity>();
 	private ArrayList<ASTEntity> allMethods = new ArrayList<ASTEntity>();
 	private HashMap<ASTEntity, Integer> allMethodsIds = new  HashMap<ASTEntity, Integer>();
 	
-	public ASTProject(String projectPath) {
-		importPath(projectPath);
-		updateProject();
+	public ASTProjectImporter() {
 	}
 	/**
 	 * <h1>updateProject</h1>
@@ -38,39 +37,21 @@ public class ASTProject {
 			}
 		}
 	}
-	
-	public ASTEntity searchForMethod(String methodName) {
-		for(ASTEntity method : allMethods) {
-			if(method.getStackTrace().contains(methodName))
-				return method;
-		}
-		return null;
-	}
-	/**
-	 * <h1>generateTraversalMatrix</h1>
-	 * Uses {@link #getCalledMethodsBy} to generate a traversal matrix between all methods in the project.
-	 * @return a traversal matrix between all methods in the project
-	 */
-	public double[][] generateTraversalMatrix() {
+	public SparceMatrix createCallGraph() throws Exception {
+		updateProject();
 		int N = allMethods.size(); 
-		double[][] M = new double[N][N];
+		SparceMatrix M = new SparceMatrix(N);
 		for(int i=0;i<N;i++) {
-			M[i][i] = 1;
+			M.set(i, i, 1);
 			for(ASTEntity entity : getCalledMethodsBy(allMethods.get(i)))
 				if(entity.isMethod() && allMethods.contains(entity)) {
-					M[i][allMethodsIds.get(entity)] = 1;
+					M.set(i, allMethodsIds.get(entity), 1);
 				}
 		}
 		return M;
 	}
-	public ASTEntity getMethodByIndexInTraversalMatrix(int i) {
+	public Object getMethod(int i) {
 		return allMethods.get(i);
-	}
-	public int getIndexInTraversalMatrix(ASTEntity method) {
-		return allMethodsIds.get(method);
-	}
-	public ArrayList<ASTEntity> getMethods() {
-		return allMethods;
 	}
 	/**
 	 * <h1>getCalledMethodsBy</h1>
@@ -133,7 +114,7 @@ public class ASTProject {
 				if(posQ!=-1 && posQ<idxEquals)
 					idxEquals = -1;
 			}
-			if(idxEquals>0 && statement.charAt(idxEquals-1)=='!')
+			if(idxEquals>0 && statement.charAt(idxEquals-1)=='!')//ommit != statements
 				idxEquals = -1;
 			if(idxEquals<statement.length()-1 && idxEquals<statement.length()-1 && statement.charAt(idxEquals+1)=='=')
 				idxEquals = -1;
@@ -186,7 +167,7 @@ public class ASTProject {
 	 * @return a list of identified {@link ASTEntity} instances from the project used by the given statement
 	 * @see #getStatementCalls(String, HashMap, ASTEntity, ASTEntity)
 	 */
-	private ArrayList<ASTEntity> recognizeKnownEntity(String callText, ASTEntity parentEntity,  HashMap<String, ASTEntity> variableClasses, ASTEntity defaultParentEntity) {
+	synchronized private ArrayList<ASTEntity> recognizeKnownEntity(String callText, ASTEntity parentEntity,  HashMap<String, ASTEntity> variableClasses, ASTEntity defaultParentEntity) {
 		ArrayList<ASTEntity> ret = new ArrayList<ASTEntity>();
 		callText = callText.trim();
 		//while(callText.startsWith("(") && callText.endsWith(")")) 
@@ -199,9 +180,16 @@ public class ASTProject {
 			int idx = callText.indexOf("(");
 			int nArgs = CodeManipulation.topLevelCountOf(callText, ',', idx+1)+1;
 			int last = CodeManipulation.topLevelIndexOf(callText,')', idx+1);
-			if(idx<0 || last>=callText.length()-1 || callText.substring(idx+1, last).trim().isEmpty())
+			try {
+				if(idx<0 || last>=callText.length()-1 || idx+1>=callText.length()-1)
+					nArgs = 0;
+				else if(callText.substring(idx+1, last).trim().isEmpty())
+					nArgs = 0;
+			}
+			catch(Exception e) {
 				nArgs = 0;
-			String className = callText.substring(4, idx).trim();
+			}
+			String className = callText.substring(4, idx<0?callText.length():idx).trim();
 			parentEntity = projectClasses.get(className);
 			ASTEntity foundConstructor = null;
 			if(parentEntity!=null)
@@ -354,47 +342,10 @@ public class ASTProject {
 		}
 		return ret;
 	}
-	
-
-	/**
-	 * <h1>importPath</h1>
-	 * Imports all Java classes found in <code>.java</code> files under the designated directory
-	 * and its sub-directories into the project.  {@link #updateProject} must be called afterwards.
-	 * @param path a valid directory path
-	 * @see #importFile(String)
-	 * @see #updateProject()
-	 */
-	public void importPath(String path) {
-	    File directory = new File(path);
-	    File[] fList = directory.listFiles();
-	    for (File file : fList) {
-	        if (file.isFile()) {
-	        	if(file.getPath().endsWith(".java"))
-	        		importFile(file.getPath());
-	        } 
-	        else if (file.isDirectory()) {
-	        	importPath(file.getPath());
-	        }
-	    }
-	}
-	/**
-	 * <h1>importFile</h1>
-	 * Imports a Java class from a designated file into the project.  {@link #updateProject} must be called afterwards.
-	 * @param path a file path
-	 * @see #importPath(String)
-	 * @see #addClassObject(ClassObject)
-	 * @see ClassObject#ClassObject(String)
-	 * @see #updateProject()
-	 */
-	public void importFile(String path) {
-		try {
-			ClassObject obj = new ClassObject(path);
-			addClassObject(obj);
-		}
-		catch(Exception e) {
-			System.err.println(path+": "+e.toString());
-			//e.printStackTrace();
-		}
+	@Override
+	protected void importFile(File file) throws Exception {
+		ClassObject obj = new ClassObject(file.getPath());
+		addClassObject(obj);
 	}
 	/**
 	 * <h1>addClassObject</h1>
@@ -404,8 +355,10 @@ public class ASTProject {
 	 * @see #updateProject()
 	 */
 	public void addClassObject(ClassObject classObject) {
-		for(Node entity : classObject.getRoot().collapse())
-			if(((ASTEntity)entity).isClass())
-				projectClasses.put(entity.getStackTrace(), (ASTEntity)entity);
+		Node root = classObject.getRoot();
+		if(root!=null)
+			for(Node entity : root.collapse())
+				if(((ASTEntity)entity).isClass())
+					projectClasses.put(entity.getStackTrace(), (ASTEntity)entity);
 	}
 }

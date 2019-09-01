@@ -1,0 +1,18 @@
+﻿Githun URL (https://github.com/),Domain,Project Methods,Project Calls,Method of Interest,Important to Read
+Takerulol/lwjgl-water-shader,Game Development,70,119,App.main,"Renderer.Renderer, Renderer.InitObjects, Renderer.setup, Settings.init"
+sarxos/webcam-capture,Hardware Interface,"1,659","2,838",ManyCamerasAtOnceExample.main,"ManyCamerasAtOnceExample.ManyCamerasAtOnceExample, WebcamPanel.start, Webcam.setViewSize"
+sarxos/webcam-capture,Hardware Interface,"1,659","2,838",DetectMotionExample.main,"DetectMotionExample.DetectMotionExample, Webcam.setViewSize"
+sarxos/webcam-capture,Hardware Interface,"1,659","2,838",WebcamPanelWithSubcomponentsExample.main,"WebcamPanel.start, WebcamPanel.stop, Webcam.close, Webcam.setViewSize"
+socialsensor/topic-detection,Machine Learning,233,362,DyscoCreator.main,"DyscoCreator.createDyscos, Vocabulary.getCorpusVocabulary"
+AbeelLab/javaml,Machine Learning,"1,673","3,114",Tutorial2BinMinimalEntropyPartitioning.main,"TwoBinMinimalEntropyPartitioning.build, TwoBinMinimalEntropyPartitioning.filter, AbstractBayesianClassifier.buildClassifier"
+AbeelLab/javaml,Machine Learning,"1,673","3,114",TutorialStoreData.main,"FileHandler.exportDataset(2 arguments), FileHandler.exportDataset(3 arguments), FileHandler.exportDataset(4 arguments)"
+AbeelLab/javaml,Machine Learning,"1,673","3,114",TutorialCVSameFolds.main,CrossValidation.crossValidation
+AbeelLab/javaml,Machine Learning,"1,673","3,114",TutorialNaiveBayes.main,EqualWidthBinning.build
+AbeelLab/javaml,Machine Learning,"1,673","3,114",TutorialWekaAttributeSelection.main,"WekaAttributeSelection.build, ToWekaUtils.ToWekaUtils"
+oshi/oshi,Operating Systems,"1,417","3,043",SystemInfoTest.main,SystemInfoTest.printDisks
+bitletorg/weupnp,Networking,92,148,Main.main,"GatewayDevice.discorver, GatewayDevice.getSpecificPortMappingEntry, GatewayDevice.getPortMappingNumberOfEntries, GatewayDevice.getGenericPortMappingEntry, GatewayDevice.deletePortMapping, GatewayDevice.addPortMapping, GatewayDiscover.getValidGateway, GatewayDevice.isConnected"
+SteelBridgeLabs/neo4j-gremlin-bolt,Networking,672,"2,231",Neo4JSession.commit," Neo4JSession.flush, Neo4JSession.createEdges,  Neo4JEdge.insertCommand,  Neo4JSession.updateEdges,  Neo4JEdge.updateCommand,  Neo4JSession.deleteEdges,   Neo4JEdge.deleteCommand, Neo4JSession.createVertices,  Neo4JVertex.insertCommand,  Neo4JSession.updatedVertices,  Neo4JVertex.updateCommand,  Neo4JSession.deleteVertices,  Neo4JSession.deleteCommand"
+bumptech/glide,Android,"6,619","11,210",Glide.with,
+cymcsg/UltimateRecyclerView,Android,"1,931","2,886",UltimateRecyclerView.UltimateRecyclerView,
+square/retrofit,Android,"2,110","3,240",SimpleMockService.main,SimpleMockService.printContributors
+JakeWharton/ActionBarSherlock,Android,"3,344","5,147",ActionBarSherlockCompact.initActionBar,"ActionBarSherlockCompact.initActionBar, ActionBarSherlockCompact.installDecor, ActionBarSherlockCompact.dispatchInvalidateOption, ActionBarSherlockCompact.preparePanel, MenuBuilder.restoreActionViewStates, MenuBuilder.saveActionViewStates "
